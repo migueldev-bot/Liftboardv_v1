@@ -1,0 +1,13 @@
+{
+  "name": "LiftBoard",
+  "short_name": "LiftBoard",
+  "start_url": "./LiftBoard_v9.html",
+  "display": "standalone",
+  "background_color": "#0f0f0f",
+  "theme_color": "#e53e3e",
+  "orientation": "portrait",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

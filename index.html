@@ -230,6 +230,41 @@ html,body{margin:0;padding:0;background:#080808;font-family:'Inter',sans-serif;c
 .diet-input-row{display:flex;align-items:center;gap:8px;}
 .diet-input{background:var(--s2);border:.5px solid var(--border2);border-radius:6px;padding:6px 10px;font-size:13px;color:var(--text);font-family:'Inter',sans-serif;width:110px;text-align:center;}
 .diet-input:focus{outline:none;border-color:var(--red);}
+
+/* Save set button */
+.btn-save-set{background:var(--red);color:#fff;border:none;border-radius:6px;padding:8px 18px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap;transition:all .15s;display:flex;align-items:center;gap:5px;}
+.btn-save-set:hover{background:var(--red2);}
+.btn-save-set.saved{background:#0f2a10;color:var(--green);border:.5px solid #1a5c1a;}
+
+/* Drag handle for exercise reorder */
+.drag-handle{cursor:grab;color:var(--muted2);padding:0 6px;display:flex;align-items:center;flex-shrink:0;touch-action:none;}
+.drag-handle:active{cursor:grabbing;}
+.drag-handle svg{width:14px;height:14px;}
+.ex-block.dragging{opacity:.4;border-color:var(--red) !important;}
+.ex-block.drag-over{border-top:2px solid var(--red);}
+
+/* Session toolbar */
+.sess-toolbar{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;}
+.btn-sess-tool{background:var(--s2);border:.5px solid var(--border2);border-radius:var(--r);padding:7px 12px;font-size:12px;color:var(--muted);cursor:pointer;font-family:'Inter',sans-serif;display:flex;align-items:center;gap:5px;transition:all .15s;}
+.btn-sess-tool:hover{border-color:var(--red);color:var(--red);}
+.btn-sess-tool svg{width:13px;height:13px;}
+
+/* Add exercise panel inside session */
+.add-ex-panel{background:var(--s1);border:.5px solid var(--border);border-radius:var(--r);padding:12px;margin-bottom:10px;}
+.add-ex-panel-title{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;}
+.add-ex-muscle-chips{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px;}
+.aec{padding:4px 10px;border-radius:20px;font-size:11px;cursor:pointer;border:.5px solid var(--border2);background:var(--s2);color:var(--muted);transition:all .12s;}
+.aec.on{border-color:var(--red);background:rgba(229,62,62,.1);color:var(--red);}
+.add-ex-list{max-height:160px;overflow-y:auto;border:.5px solid var(--border);border-radius:var(--r);}
+.add-ex-item{padding:9px 12px;font-size:12px;cursor:pointer;border-top:.5px solid var(--border);display:flex;align-items:center;gap:8px;transition:background .1s;}
+.add-ex-item:first-child{border-top:none;}
+.add-ex-item:hover{background:var(--s2);}
+.add-ex-custom-row{display:flex;gap:6px;margin-top:8px;}
+
+/* Technique register panel */
+.tech-register-panel{background:var(--s2);border:.5px solid var(--border2);border-radius:var(--r);padding:12px;margin-top:10px;}
+.tech-register-title{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;}
+
 .empty{text-align:center;padding:28px 14px;color:var(--muted);font-size:13px;line-height:1.7;}
 
 /* MODAL */
@@ -591,6 +626,7 @@ let splits=[],history=[],customEx={};
 let wizStep=0,wizData={};
 let openTechPanel=null;
 let sessionSplit=null,sessionSets={},sessionObs={};
+let dragSrcIdx=null;
 let cardioSess={type:null,data:{}};
 let chartInst=null;
 
@@ -599,6 +635,10 @@ function load(){
   try{
     const p=localStorage.getItem('lb9_profile');
     if(p)profile=JSON.parse(p);
+    // Restore custom techniques
+    if(profile.customTechniques&&profile.customTechniques.length){
+      profile.customTechniques.forEach(t=>{if(!TECHNIQUES.find(x=>x.id===t.id))TECHNIQUES.push(t);});
+    }
     const s=localStorage.getItem('lb9_splits');
     if(s)splits=JSON.parse(s);
     const h=localStorage.getItem('lb9_hist');
@@ -906,13 +946,17 @@ function renderSplits(){
   const muscSplits=splits.filter(s=>s.type!=='cardio');
   const cardioSplits=splits.filter(s=>s.type==='cardio');
 
+  const EDIT_ICON=`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`;
   const splitCard=(sp)=>`<div class="split-item" onclick="openSession('${sp.id}')">
     <div class="split-lft"><div class="split-letter">${sp.id}</div><div>
       <div class="split-info-name">${sp.name}</div>
       <div class="split-info-sub">${sp.type==='cardio'?(sp.cardioType?sp.cardioType.label:'Cardio'):sp.muscles.join(' · ')}</div>
       <div class="split-info-count">${sp.type==='cardio'?'Sessão de cardio':sp.exercises.length+' exercícios'}</div>
     </div></div>
-    <button class="split-del" onclick="event.stopPropagation();delSplit('${sp.id}')" title="Excluir treino">${TRASH_ICON}</button>
+    <div style="display:flex;align-items:center;gap:4px;">
+      <button style="background:none;border:.5px solid var(--border2);border-radius:6px;color:var(--muted);cursor:pointer;padding:5px 7px;display:flex;align-items:center;" onclick="event.stopPropagation();editSplit('${sp.id}')" title="Editar treino">${EDIT_ICON}</button>
+      <button class="split-del" onclick="event.stopPropagation();delSplit('${sp.id}')" title="Excluir treino">${TRASH_ICON}</button>
+    </div>
   </div>`;
 
   el.innerHTML=`
@@ -1006,8 +1050,8 @@ function renderWiz(){
       </div>`:' ';
 
     el.innerHTML=`<div class="wiz-wrap">${bar}
-      <div class="wiz-ttl">Nome do Treino</div>
-      <div class="wiz-sub">${isMusc?'Digite um nome ou selecione um programa pré-cadastrado abaixo':'Como chamar este treino de cardio?'}</div>
+      <div class="wiz-ttl">${wizData.editId?'Editar Treino':'Nome do Treino'}</div>
+      <div class="wiz-sub">${wizData.editId?'Altere o nome ou continue para ajustar músculos e exercícios':isMusc?'Digite um nome ou selecione um programa pré-cadastrado abaixo':'Como chamar este treino de cardio?'}</div>
       <input class="field" id="wn" placeholder="${isMusc?'Ex: Push, Pull, PPL-Push...':'Ex: Cardio Manhã, HIIT, Corrida...'}" value="${wizData.name}" oninput="wizData.name=this.value;wizData.preset=null;document.querySelectorAll('.preset-card').forEach(c=>c.classList.remove('sel'))"/>
       ${presetHtml}
       <div class="step-nav"><button class="btn-pv" onclick="wizBk()">← Voltar</button><button class="btn-nx" onclick="wizNx()">Próximo →</button></div>
@@ -1088,6 +1132,14 @@ function renderWiz(){
           </div>
         </div>
       </div>`).join('')}
+      <div class="tech-register-panel">
+        <div class="tech-register-title">Cadastrar nova técnica avançada</div>
+        <div style="display:flex;flex-direction:column;gap:7px;">
+          <input class="field" id="new-tech-name" placeholder="Nome da técnica (ex: Oclusão)"/>
+          <textarea class="field" id="new-tech-desc" rows="2" placeholder="Descrição breve de como executar..." style="resize:vertical;min-height:52px;font-family:'Inter',sans-serif;font-size:13px;"></textarea>
+          <button class="btn-aex" style="align-self:flex-start;" onclick="registerNewTechnique()">+ Salvar técnica</button>
+        </div>
+      </div>
       <div class="step-nav"><button class="btn-pv" onclick="wizBk()">← Voltar</button><button class="btn-nx" onclick="saveWiz()">Salvar ✓</button></div>
     </div>`;
   }
@@ -1097,6 +1149,20 @@ function esc(s){return s.replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,
 function getExList(m){return [...(BASE_EX[m]||[]).map(n=>({name:n,custom:false})),...(customEx[m]||[]).map(n=>({name:n,custom:true}))];}
 function addCustEx(m){const i=document.getElementById('cex-'+m);if(!i)return;const n=i.value.trim();if(!n)return;if(!customEx[m])customEx[m]=[];if(!customEx[m].includes(n))customEx[m].push(n);if(!wizData.exercises.some(e=>e.name===n&&e.muscle===m))wizData.exercises.push({name:n,muscle:m});i.value='';save();renderWiz();}
 function delCustEx(n,m){if(!confirm(`Excluir "${n}"?`))return;if(customEx[m])customEx[m]=customEx[m].filter(e=>e!==n);wizData.exercises=wizData.exercises.filter(e=>!(e.name===n&&e.muscle===m));save();renderWiz();}
+function registerNewTechnique(){
+  const name=(document.getElementById('new-tech-name')?.value||'').trim();
+  const desc=(document.getElementById('new-tech-desc')?.value||'').trim();
+  if(!name||!desc){alert('Preencha nome e descrição da técnica.');return;}
+  const id='custom_'+Date.now();
+  TECHNIQUES.push({id,name,desc,custom:true});
+  if(!profile.customTechniques)profile.customTechniques=[];
+  profile.customTechniques.push({id,name,desc,custom:true});
+  save();
+  const ni=document.getElementById('new-tech-name');const di=document.getElementById('new-tech-desc');
+  if(ni)ni.value='';if(di)di.value='';
+  alert('Técnica "'+name+'" cadastrada com sucesso!');
+  renderWiz();
+}
 function wizToggleMuscleStep3(m){
   const i=wizData.muscles.indexOf(m);
   if(i>=0){
@@ -1147,6 +1213,16 @@ function savePreset(){
 function saveWiz(){
   if(wizData.type==='musc'&&!wizData.exercises.length){alert('Selecione ao menos um exercício.');return;}
   if(wizData.type==='cardio'&&!wizData.cardioType){alert('Escolha a modalidade.');return;}
+  if(wizData.editId){
+    // Edit mode: update existing split in place
+    const idx=splits.findIndex(s=>s.id===wizData.editId);
+    if(idx>=0){
+      const existing=splits[idx];
+      splits[idx]={...existing,name:wizData.name,muscles:wizData.muscles,exercises:wizData.exercises,techMap:{...wizData.techMap}};
+      if(wizData.type==='cardio')splits[idx].cardioType=wizData.cardioType;
+    }
+    save();gotoPage('splits');return;
+  }
   const used=splits.map(s=>s.id);
   const id=LETTERS.find(l=>!used.includes(l))||'X';
   const sp={id,name:wizData.name,type:wizData.type,muscles:wizData.muscles,exercises:wizData.exercises,techMap:{...wizData.techMap}};
@@ -1171,14 +1247,34 @@ function compBackoff(sets,topIdx){
 function openSession(id){
   const sp=splits.find(s=>s.id===id);if(!sp)return;
   if(sp.type==='cardio'){openCardioSess(sp);return;}
-  sessionSplit=sp;sessionSets={};sessionObs={};
+  sessionSplit=sp;sessionSets={};sessionObs={};dragSrcIdx=null;
   sp.exercises.forEach((_,ei)=>{sessionSets[ei]=defSets();sessionObs[ei]='';});
   gotoPage('session');renderSess();
 }
 
+/* ── EDIT SPLIT (wizard re-entry) ── */
+function editSplit(id){
+  const sp=splits.find(s=>s.id===id);if(!sp)return;
+  wizData={
+    type:sp.type,name:sp.name,muscles:[...(sp.muscles||[])],
+    exercises:sp.exercises.map(e=>({...e})),
+    techMap:{...(sp.techMap||{})},
+    editId:id,preset:null,cardioType:sp.cardioType||null,
+  };
+  wizStep=1; // skip type pick, go straight to name
+  openTechPanel=null;
+  gotoPage('wizard');renderWiz();
+}
+
+/* Override saveWiz to handle edit mode */
+const _origSaveWiz=typeof saveWiz==='function'?saveWiz:null;
+
 function renderSess(){
   const sp=sessionSplit,last=getLastEntry(sp.id),el=document.getElementById('p-session');
   const techMap=sp.techMap||{};
+
+
+
   const exHtml=sp.exercises.map((ex,ei)=>{
     const key=ex.name+'|'+ex.muscle;
     const techId=techMap[key];const techObj=TECHNIQUES.find(t=>t.id===techId);
@@ -1188,46 +1284,113 @@ function renderSess(){
     const gifUrl=GIF_MAP[ex.name];
     const gifEl=gifUrl?`<img class="ex-gif" src="${gifUrl}" alt="${ex.name}" onerror="this.style.display='none';this.nextSibling.style.display='flex'"/><div class="ex-gif-ph" style="display:none;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="1.5"><path d="M6 4v16M18 4v16M6 12h12"/></svg></div>`:`<div class="ex-gif-ph"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="1.5"><path d="M6 4v16M18 4v16M6 12h12"/></svg></div>`;
     const prev=le&&le.sets&&le.sets.length?`<div class="prev-bar"><div class="prev-lbl">Última sessão</div><div class="prev-pills">${le.sets.map((s,si)=>`<div class="prev-pill ${s.top?'is-top':''}">${s.top?'★ ':''}S${si+1}: ${s.weight||'—'}kg × ${s.reps||'—'}${s.top?' — Top Set':''}${s.backoffSet!=null?` — Back-off Set ${s.backoffSet}kg`:''}</div>`).join('')}</div></div>`:'';
-    return `<div class="ex-block" id="exb-${ei}">
-      <div class="ex-blk-hdr">${gifEl}<div class="ex-blk-info">
-        <div class="ex-blk-name">${cust?`<span style="width:6px;height:6px;border-radius:50%;background:var(--orange);display:inline-block;"></span>`:''}${ex.name}${ti>=0?`<span class="top-tag">★ Top Set S${ti+1}</span>`:''}${bf!==null?`<span class="boff-tag">Back-off Set ${bf}kg</span>`:''}</div>
-        <div class="ex-blk-muscle">${ex.muscle}${techObj?` · <span style="color:var(--orange)">${techObj.name}</span>`:''}</div>
-      </div></div>
+    return `<div class="ex-block" id="exb-${ei}" draggable="true"
+      ondragstart="onDragStart(event,${ei})" ondragover="onDragOver(event,${ei})"
+      ondragleave="onDragLeave(event)" ondrop="onDrop(event,${ei})" ondragend="onDragEnd(event)">
+      <div class="ex-blk-hdr">
+        <div class="drag-handle" title="Arrastar para reordenar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="5" r="1" fill="currentColor"/><circle cx="9" cy="12" r="1" fill="currentColor"/><circle cx="9" cy="19" r="1" fill="currentColor"/><circle cx="15" cy="5" r="1" fill="currentColor"/><circle cx="15" cy="12" r="1" fill="currentColor"/><circle cx="15" cy="19" r="1" fill="currentColor"/></svg>
+        </div>
+        ${gifEl}
+        <div class="ex-blk-info">
+          <div class="ex-blk-name">${cust?`<span style="width:6px;height:6px;border-radius:50%;background:var(--orange);display:inline-block;"></span>`:''}${ex.name}${ti>=0?`<span class="top-tag">★ Top Set S${ti+1}</span>`:''}${bf!==null?`<span class="boff-tag">Back-off Set ${bf}kg</span>`:''}</div>
+          <div class="ex-blk-muscle">${ex.muscle}${techObj?` · <span style="color:var(--orange)">${techObj.name}</span>`:''}</div>
+        </div>
+      </div>
       ${techObj?`<div class="tech-info-box"><div class="tech-info-name">${techObj.name}</div><div class="tech-info-desc">${techObj.desc}</div></div>`:''}
       ${prev}
       <div class="sets-wrap">
         <div class="sets-hdr-r"><div>#</div><div>Carga (kg)</div><div>Repetições</div><div></div></div>
-        ${sets.map((s,si)=>{const it=si===ti;return `<div class="set-row"><div class="set-n ${it?'top':''}">${it?'★':si+1}</div>
-          <input class="set-in ${it?'is-top':''}" type="number" min="0" step=".5" value="${s.weight}" placeholder="0" oninput="updSet(${ei},${si},'weight',this.value)"/>
-          <input class="set-in ${it?'is-top':''}" type="number" min="0" value="${s.reps}" placeholder="0" oninput="updSet(${ei},${si},'reps',this.value)"/>
+        ${sets.map((s,si)=>{const it=si===ti;const sid=`${ei}-${si}`;return `<div class="set-row" id="srow-${sid}">
+          <div class="set-n ${it?'top':''}">${it?'★':si+1}</div>
+          <input class="set-in ${it?'is-top':''}" id="w-${sid}" type="number" min="0" step=".5" value="${s.weight}" placeholder="0" oninput="updSet(${ei},${si},'weight',this.value);markExUnsaved(${ei})"/>
+          <input class="set-in ${it?'is-top':''}" id="r-${sid}" type="number" min="0" value="${s.reps}" placeholder="0" oninput="updSet(${ei},${si},'reps',this.value);markExUnsaved(${ei})"/>
           <button class="btn-del-s" onclick="delSet(${ei},${si})">✕</button></div>`;}).join('')}
-        <div><button class="btn-add-s" onclick="addSet(${ei})">+ Série</button></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px;">
+          <button class="btn-add-s" onclick="addSet(${ei})">+ Série</button>
+          <button class="btn-save-set ${sessionSets[ei]&&sessionSets[ei].every(s=>s.saved)?'saved':''}" id="sv-ex-${ei}" onclick="saveExSets(${ei})">
+            ${sessionSets[ei]&&sessionSets[ei].every(s=>s.saved)?`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Salvo`:`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Salvar`}
+          </button>
+        </div>
       </div>
       <div class="obs-wrap"><div class="obs-lbl">Observações</div><textarea class="obs-ta" rows="2" placeholder="Notas, sensações, técnica..." oninput="sessionObs[${ei}]=this.value">${sessionObs[ei]||''}</textarea></div>
     </div>`;
   }).join('');
+
   el.innerHTML=`<div style="flex:1;overflow-y:auto;padding:13px 13px 0;">
-    <div class="sess-hdr"><button class="btn-back" onclick="gotoPage('splits')">← Voltar</button><div class="sess-name">${sp.id} — ${sp.name}</div></div>
+    <div class="sess-hdr">
+      <button class="btn-back" onclick="gotoPage('splits')">← Voltar</button>
+      <div class="sess-name">${sp.id} — ${sp.name}</div>
+    </div>
     ${exHtml}
   </div><div class="save-bar"><button class="btn-fin" onclick="finishSess()">Finalizar Treino</button></div>`;
 }
 
 function updSet(ei,si,f,v){
-  if(!sessionSets[ei])sessionSets[ei]=defSets();sessionSets[ei][si][f]=v;
+  if(!sessionSets[ei])sessionSets[ei]=defSets();
+  sessionSets[ei][si][f]=v;
+  // saved state managed by saveExSets/markExUnsaved
   const sets=sessionSets[ei];const ti=compTop(sets);const bf=compBackoff(sets,ti);
   const b=document.getElementById('exb-'+ei);if(!b)return;
   b.querySelectorAll('.set-row').forEach((row,i)=>{
-    const n=row.querySelector('.set-n');const ins=row.querySelectorAll('.set-in');const it=i===ti;
+    const n=row.querySelector('.set-n');const it=i===ti;
     if(n){n.className='set-n'+(it?' top':'');n.textContent=it?'★':i+1;}
-    ins.forEach(inp=>inp.className='set-in'+(it?' is-top':''));
+    row.querySelectorAll('.set-in').forEach(inp=>inp.className='set-in'+(it?' is-top':''));
   });
   const nm=b.querySelector('.ex-blk-name');
   if(nm){const ex=sessionSplit.exercises[ei];const c=(customEx[ex.muscle]||[]).includes(ex.name);
-    nm.innerHTML=`${c?`<span style="width:6px;height:6px;border-radius:50%;background:var(--orange);display:inline-block;"></span>`:''}${ex.name}${ti>=0?`<span class="top-tag">★ Top Set S${ti+1}</span>`:''}${bf!==null?`<span class="boff-tag">Back-off Set ${bf}kg</span>`:''}`;
+    nm.innerHTML=`${c?`<span style="width:6px;height:6px;border-radius:50%;background:var(--orange);display:inline-block;"></span>`:''}${ex.name}${ti>=0?`<span class="top-tag">★ Top Set S${ti+1}</span>`:''}${bf!==null?`<span class="boff-tag">Back-off Set ${bf}kg</span>`:''}`;}
+}
+
+function markExUnsaved(ei){
+  const btn=document.getElementById('sv-ex-'+ei);
+  if(btn){
+    btn.classList.remove('saved');
+    btn.innerHTML=`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Salvar`;
   }
+  if(sessionSets[ei])sessionSets[ei].forEach(s=>s.saved=false);
+}
+
+function saveExSets(ei){
+  if(!sessionSets[ei])return;
+  sessionSets[ei].forEach(s=>s.saved=true);
+  const btn=document.getElementById('sv-ex-'+ei);
+  if(btn){
+    btn.classList.add('saved');
+    btn.innerHTML=`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Salvo`;
+  }
+  // Update top/backoff badges live
+  const sets=sessionSets[ei];const ti=compTop(sets);const bf=compBackoff(sets,ti);
+  const b=document.getElementById('exb-'+ei);if(!b)return;
+  b.querySelectorAll('.set-row').forEach((row,i)=>{
+    const n=row.querySelector('.set-n');const it=i===ti;
+    if(n){n.className='set-n'+(it?' top':'');n.textContent=it?'★':i+1;}
+    row.querySelectorAll('.set-in').forEach(inp=>inp.className='set-in'+(it?' is-top':''));
+  });
+  const nm=b.querySelector('.ex-blk-name');
+  if(nm){const ex=sessionSplit.exercises[ei];const c=(customEx[ex.muscle]||[]).includes(ex.name);
+    nm.innerHTML=`${c?`<span style="width:6px;height:6px;border-radius:50%;background:var(--orange);display:inline-block;"></span>`:''}${ex.name}${ti>=0?`<span class="top-tag">★ Top Set S${ti+1}</span>`:''}${bf!==null?`<span class="boff-tag">Back-off Set ${bf}kg</span>`:''}`;}
 }
 function addSet(ei){sessionSets[ei]=sessionSets[ei]||defSets();sessionSets[ei].push({weight:'',reps:''});renderSess();}
 function delSet(ei,si){if(!sessionSets[ei]||sessionSets[ei].length<=1)return;sessionSets[ei].splice(si,1);renderSess();}
+
+/* Drag & drop reorder */
+function onDragStart(e,idx){dragSrcIdx=idx;e.currentTarget.classList.add('dragging');e.dataTransfer.effectAllowed='move';}
+function onDragOver(e,idx){e.preventDefault();e.dataTransfer.dropEffect='move';if(idx!==dragSrcIdx)e.currentTarget.classList.add('drag-over');}
+function onDragLeave(e){e.currentTarget.classList.remove('drag-over');}
+function onDrop(e,idx){
+  e.preventDefault();e.currentTarget.classList.remove('drag-over');
+  if(dragSrcIdx===null||dragSrcIdx===idx)return;
+  const exs=sessionSplit.exercises;
+  const [moved]=exs.splice(dragSrcIdx,1);exs.splice(idx,0,moved);
+  const sArr=Object.keys(sessionSets).map(k=>({k:parseInt(k),s:sessionSets[k],o:sessionObs[k]})).sort((a,b)=>a.k-b.k);
+  const [movedS]=sArr.splice(dragSrcIdx,1);sArr.splice(idx,0,movedS);
+  sessionSets={};sessionObs={};sArr.forEach((x,i)=>{sessionSets[i]=x.s;sessionObs[i]=x.o;});
+  const sp=splits.find(s=>s.id===sessionSplit.id);
+  if(sp)sp.exercises=exs.slice();
+  save();dragSrcIdx=null;renderSess();
+}
+function onDragEnd(e){e.currentTarget.classList.remove('dragging');document.querySelectorAll('.ex-block').forEach(b=>b.classList.remove('drag-over'));}
 
 function finishSess(){
   const sp=sessionSplit;

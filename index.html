@@ -1,15 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
- <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-Y68SH1MPJC"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-Y68SH1MPJC');
-</script>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#e53e3e">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -265,6 +256,7 @@ html,body{margin:0;padding:0;background:#080808;font-family:'Inter',sans-serif;c
 .tech-register-panel{background:var(--s2);border:.5px solid var(--border2);border-radius:var(--r);padding:12px;margin-top:10px;}
 .tech-register-title{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;}
 
+
 .empty{text-align:center;padding:28px 14px;color:var(--muted);font-size:13px;line-height:1.7;}
 
 /* MODAL */
@@ -406,10 +398,15 @@ html,body{margin:0;padding:0;background:#080808;font-family:'Inter',sans-serif;c
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
       Histórico
     </button>
+    <button class="nb" id="nb-aff" onclick="gotoPage('affiliate')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+      Parceiros
+    </button>
   </div>
   <div id="p-dashboard" class="page"></div>
   <div id="p-splits" class="page hidden"></div>
   <div id="p-history" class="page hidden"></div>
+  <div id="p-affiliate" class="page hidden"></div>
   <div id="p-session" class="hidden" style="display:flex;flex-direction:column;flex:1;min-height:0;overflow:hidden;"></div>
   <div id="p-wizard" class="page hidden"></div>
   <div id="modal-root"></div>
@@ -781,14 +778,43 @@ function saveSettings(){
 
 /* ══════════════ NAV ══════════════ */
 function gotoPage(p){
-  ['dashboard','splits','history','wizard'].forEach(x=>{document.getElementById('p-'+x)?.classList.toggle('hidden',x!==p);});
+  ['dashboard','splits','history','affiliate','wizard'].forEach(function(x){var el=document.getElementById('p-'+x);if(el)el.classList.toggle('hidden',x!==p);});
   const sess=document.getElementById('p-session');
   if(p==='session'){sess.classList.remove('hidden');sess.style.display='flex';}
   else{sess.classList.add('hidden');sess.style.display='none';}
-  [{p:'dashboard',id:'nb-d'},{p:'splits',id:'nb-s'},{p:'history',id:'nb-h'}].forEach(({p:pg,id})=>document.getElementById(id)?.classList.toggle('active',pg===p));
+  [{p:'dashboard',id:'nb-d'},{p:'splits',id:'nb-s'},{p:'history',id:'nb-h'},{p:'affiliate',id:'nb-aff'}].forEach(function(o){var e=document.getElementById(o.id);if(e)e.classList.toggle('active',o.p===p);});
   if(p==='dashboard')renderDash();
   if(p==='splits')renderSplits();
   if(p==='history')renderHist();
+  if(p==='affiliate')renderAffiliate();
+}
+
+
+/* ══════════════ PARCEIROS ══════════════ */
+function renderAffiliate(){
+  var el=document.getElementById('p-affiliate');
+  if(!el)return;
+  var produtos=[
+    {name:'Whey Protein Concentrado 1kg',brand:'Growth Supplements',emoji:'🥛',url:'https://meli.la/2V8EJad'},
+    {name:'Creatina Monohidratada 250g',brand:'Growth Supplements',emoji:'💊',url:'https://meli.la/2CLkC97'},
+  ];
+  var html='<div style="font-family:Impact,sans-serif;font-size:17px;letter-spacing:1px;color:#777;margin-bottom:14px;">Parceiros</div>';
+  for(var i=0;i<produtos.length;i++){
+    var p=produtos[i];
+    html+='<div style="background:#181818;border:0.5px solid #282828;border-radius:8px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:14px;">'
+      +'<span style="font-size:30px;">'+p.emoji+'</span>'
+      +'<div style="flex:1;min-width:0;">'
+        +'<div style="font-size:13px;font-weight:600;color:#f0f0f0;margin-bottom:2px;">'+p.name+'</div>'
+        +'<div style="font-size:11px;color:#777;">'+p.brand+'</div>'
+      +'</div>'
+      +'<a href="'+p.url+'" target="_blank" rel="noopener noreferrer"'
+        +' style="background:#e53e3e;color:#fff;border-radius:8px;padding:9px 16px;font-size:12px;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:5px;flex-shrink:0;">'
+        +'Comprar'
+      +'</a>'
+    +'</div>';
+  }
+  html+='<div style="font-size:10px;color:#444;text-align:center;margin-top:16px;line-height:1.6;">Links de afiliados. O LiftBoard pode receber comissão por compras realizadas, sem custo adicional para você.</div>';
+  el.innerHTML=html;
 }
 
 /* ══════════════ DASHBOARD ══════════════ */

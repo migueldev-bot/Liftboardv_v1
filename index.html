@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+<meta charset="UTF-8"/>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#e53e3e">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta charset="UTF-8"/>
+<meta name="apple-mobile-web-app-title" content="LiftBoard">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
 <title>LiftBoard — by Miguel Silva</title>
 <style>
@@ -160,18 +161,50 @@ html,body{margin:0;padding:0;background:#080808;font-family:'Inter',sans-serif;c
 .prev-pills{display:flex;flex-wrap:wrap;gap:4px;}
 .prev-pill{background:#0c1a0e;border:.5px solid #1a2e1a;border-radius:20px;padding:2px 8px;font-size:11px;color:#86efac;}
 .prev-pill.is-top{background:#1a1100;border-color:rgba(229,62,62,.35);color:var(--red3);}
-.sets-wrap{padding:10px 12px;}
-.sets-hdr-r{display:grid;grid-template-columns:20px 1fr 1fr 22px;gap:5px;font-size:10px;color:var(--muted);margin-bottom:5px;text-align:center;}
-.set-row{display:grid;grid-template-columns:20px 1fr 1fr 22px;gap:5px;align-items:center;margin-bottom:5px;}
-.set-n{font-size:11px;color:var(--muted);text-align:center;}
-.set-n.top{color:var(--red);font-weight:600;}
-.set-in{background:var(--s2);border:.5px solid var(--border2);border-radius:6px;padding:7px 3px;font-size:13px;color:var(--text);font-family:'Inter',sans-serif;text-align:center;width:100%;}
+.sets-wrap{padding:8px 12px 4px;}
+.set-card{background:var(--s2);border:.5px solid var(--border2);border-radius:10px;padding:10px 12px;margin-bottom:8px;}
+.set-card.is-top-card{border-color:var(--red);background:rgba(229,62,62,.04);}
+.set-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.set-badge{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;}
+.set-badge.top{color:var(--red);}
+/* Compact row: weight small left, reps take remaining space */
+.set-card-fields{display:flex;align-items:flex-start;gap:10px;}
+.field-block{display:flex;flex-direction:column;gap:5px;}
+.field-block.weight-field{flex:0 0 58px;}
+.field-block.rep-field{flex:1;min-width:0;}
+.field-lbl{font-size:9px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;}
+.field-input-wrap{position:relative;}
+.set-in{background:var(--bg);border:.5px solid var(--border);border-radius:8px;padding:9px 22px 9px 6px;font-size:15px;font-weight:700;color:var(--text);font-family:'Inter',sans-serif;width:100%;-moz-appearance:textfield;}
+.set-in::-webkit-inner-spin-button,.set-in::-webkit-outer-spin-button{-webkit-appearance:none;}
 .set-in:focus{outline:none;border-color:var(--red);}
-.set-in.is-top{border-color:var(--red);background:rgba(229,62,62,.06);}
-.btn-del-s{background:none;border:none;color:var(--muted2);font-size:13px;cursor:pointer;}
+.set-in.is-top{border-color:var(--red);}
+.field-unit{position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:10px;color:var(--muted2);font-weight:600;pointer-events:none;}
+/* Reps zone: buttons + inline custom side by side */
+.rep-row{display:flex;align-items:center;gap:5px;flex-wrap:wrap;}
+.rep-btn{background:var(--bg);border:.5px solid var(--border2);border-radius:20px;padding:13px 18px;font-size:15px;font-weight:700;color:var(--muted);cursor:pointer;font-family:'Inter',sans-serif;transition:all .12s;line-height:1;white-space:nowrap;}
+.rep-btn:hover{border-color:var(--red);color:var(--red);}
+.rep-btn.active{background:var(--red);border-color:var(--red2);color:#fff;font-weight:700;}
+.rep-custom{background:var(--bg);border:.5px dashed var(--border2);border-radius:8px;padding:13px 6px;font-size:14px;font-weight:600;color:var(--text);font-family:'Inter',sans-serif;text-align:center;width:66px;flex-shrink:0;-moz-appearance:textfield;}
+.rep-custom::-webkit-inner-spin-button,.rep-custom::-webkit-outer-spin-button{-webkit-appearance:none;}
+.rep-custom:focus{outline:none;border-color:var(--red);background:rgba(229,62,62,.04);}
+.rep-custom::placeholder{font-size:10px;font-weight:400;color:var(--muted2);}
+/* Timer display in reps zone */
+.rep-timer{background:var(--bg);border:.5px solid var(--border);border-radius:8px;padding:7px 8px;font-size:15px;font-weight:700;color:var(--red3);text-align:center;min-width:62px;cursor:pointer;font-family:'Inter',sans-serif;display:flex;align-items:center;justify-content:center;gap:4px;}
+.rep-timer:hover{border-color:var(--red);}
+/* Tags */
+.top-tag{font-size:10px;background:rgba(229,62,62,.12);border:.5px solid rgba(229,62,62,.35);color:var(--red3);border-radius:4px;padding:1px 5px;}
+.boff-tag{font-size:10px;background:rgba(251,146,60,.08);border:.5px solid rgba(251,146,60,.3);color:var(--orange);border-radius:4px;padding:1px 5px;}
+.set-n{display:none;}
+.btn-del-s{background:none;border:none;color:var(--muted2);font-size:13px;cursor:pointer;padding:2px;}
 .btn-del-s:hover{color:var(--red);}
-.btn-add-s{background:transparent;border:.5px dashed var(--border2);border-radius:6px;padding:5px 11px;font-size:11px;color:var(--muted);cursor:pointer;font-family:'Inter',sans-serif;margin-top:4px;}
+.btn-add-s{width:100%;background:transparent;border:.5px dashed var(--border2);border-radius:8px;padding:9px;font-size:12px;color:var(--muted);cursor:pointer;font-family:'Inter',sans-serif;margin-top:2px;}
 .btn-add-s:hover{border-color:var(--red);color:var(--red);}
+/* Timer toggle chip in wizard */
+.timer-chip{display:inline-flex;align-items:center;gap:5px;background:var(--s2);border:.5px solid var(--border2);border-radius:20px;padding:4px 10px;font-size:11px;color:var(--muted);cursor:pointer;font-family:'Inter',sans-serif;transition:all .12s;}
+.timer-chip:hover{border-color:var(--orange);color:var(--orange);}
+.timer-chip.on{background:rgba(251,146,60,.1);border-color:var(--orange);color:var(--orange);}
+.timer-input{background:var(--s2);border:.5px solid var(--border2);border-radius:var(--r);padding:8px 10px;font-size:14px;color:var(--text);font-family:'Inter',sans-serif;width:100%;}
+.timer-input:focus{outline:none;border-color:var(--orange);}
 .top-tag{font-size:10px;background:rgba(229,62,62,.12);border:.5px solid rgba(229,62,62,.35);color:var(--red3);border-radius:4px;padding:1px 5px;}
 .boff-tag{font-size:10px;background:rgba(251,146,60,.08);border:.5px solid rgba(251,146,60,.3);color:var(--orange);border-radius:4px;padding:1px 5px;}
 .obs-wrap{padding:4px 12px 10px;}
@@ -211,6 +244,8 @@ html,body{margin:0;padding:0;background:#080808;font-family:'Inter',sans-serif;c
 .hist-pills{display:flex;flex-wrap:wrap;gap:4px;}
 .hist-pill{background:var(--s2);border:.5px solid var(--border2);border-radius:20px;padding:2px 8px;font-size:11px;color:var(--muted);}
 .hist-pill.top{background:rgba(229,62,62,.1);border-color:rgba(229,62,62,.35);color:var(--red3);}
+.hist-total{font-size:11px;color:var(--muted2);margin-top:5px;padding-top:4px;border-top:.5px solid var(--border);font-style:italic;}
+.hist-total strong{color:var(--text);font-style:normal;}
 
 .deficit-card{background:var(--s1);border:.5px solid var(--border);border-radius:var(--r);padding:11px 13px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
 .deficit-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;}
@@ -254,6 +289,15 @@ html,body{margin:0;padding:0;background:#080808;font-family:'Inter',sans-serif;c
 
 /* Technique register panel */
 .tech-register-panel{background:var(--s2);border:.5px solid var(--border2);border-radius:var(--r);padding:12px;margin-top:10px;}
+.sets-cfg-panel{background:rgba(229,62,62,.05);border:.5px solid rgba(229,62,62,.2);border-radius:6px;padding:10px 12px;margin-top:4px;}
+.sets-cfg-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.sets-cfg-lbl{font-size:11px;color:var(--muted);white-space:nowrap;}
+.sets-cfg-in{background:var(--s2);border:.5px solid var(--border2);border-radius:6px;padding:5px 8px;font-size:13px;font-weight:600;color:var(--text);font-family:'Inter',sans-serif;width:56px;text-align:center;}
+.sets-cfg-in:focus{outline:none;border-color:var(--red);}
+.sets-cfg-sep{font-size:12px;color:var(--muted);}
+.btn-sets-cfg{font-size:10px;background:none;border:.5px solid var(--border2);border-radius:4px;padding:2px 8px;color:var(--muted);cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap;}
+.btn-sets-cfg:hover{border-color:var(--red);color:var(--red);}
+.btn-sets-cfg.active{border-color:var(--red);color:var(--red);background:rgba(229,62,62,.08);}
 .tech-register-title{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;}
 
 
@@ -795,8 +839,8 @@ function renderAffiliate(){
   var el=document.getElementById('p-affiliate');
   if(!el)return;
   var produtos=[
-    {name:'Whey Protein Concentrado 1kg',brand:'Growth Supplements',emoji:'🥛',url:'https://meli.la/2V8EJad'},
-    {name:'Creatina Monohidratada 250g',brand:'Growth Supplements',emoji:'💊',url:'https://meli.la/2CLkC97'},
+    {name:'Suplementos LiftBoard',brand:'Mercado Livre',emoji:'🏋️',url:'https://meli.la/1fyGM1m'},
+    {name:'Acessórios Liftboard — Horsepower PRO',brand:'Horsepower PRO',emoji:'⚙️',url:'https://horsepowerpro.com.br/acessorios/?mpage=3'},
   ];
   var html='<div style="font-family:Impact,sans-serif;font-size:17px;letter-spacing:1px;color:#777;margin-bottom:14px;">Parceiros</div>';
   for(var i=0;i<produtos.length;i++){
@@ -1136,13 +1180,30 @@ function renderWiz(){
             const sel=wizData.exercises.some(e=>e.name===ex.name&&e.muscle===m);
             const tech=wizData.techMap[key];
             const techObj=TECHNIQUES.find(t=>t.id===tech);
+            const exData=wizData.exercises.find(e=>e.name===ex.name&&e.muscle===m)||{};
+            const series=exData.series||3;
+            const repsMin=exData.repsMin||8;
+            const repsMax=exData.repsMax||12;
+            const safeKey=btoa(ex.name+m).replace(/[^a-zA-Z0-9]/g,'').slice(0,10);
             return `<div>
               <div class="li ${sel?'sel':''}" onclick="togEx('${esc(ex.name)}','${m}')">
                 <div class="chk">${sel?`<svg viewBox="0 0 12 12" fill="none" stroke="#fff" stroke-width="2.5"><polyline points="2,6 5,9 10,3"/></svg>`:''}</div>
                 <span class="item-txt">${ex.name}</span>
+                ${sel?`<span id="cfg-badge-${safeKey}" style="font-size:10px;color:var(--red3);background:rgba(229,62,62,.1);border:.5px solid rgba(229,62,62,.25);border-radius:4px;padding:1px 7px;white-space:nowrap;flex-shrink:0;">${series}x ${repsMin}-${repsMax}</span>`:''}
                 ${ex.custom?`<span class="item-badge">custom</span><button style="background:none;border:none;color:var(--muted2);font-size:12px;cursor:pointer;padding:2px 5px;" onclick="event.stopPropagation();delCustEx('${esc(ex.name)}','${m}')" title="Excluir">✕</button>`:''}
                 ${sel?`<button class="tech-btn ${tech?'has':''}" onclick="event.stopPropagation();toggleTP('${esc(key)}')">${tech?techObj?.name||'Técnica':'+ Técnica'}</button>`:''}
               </div>
+              ${sel?`<div class="sets-cfg-panel">
+                <div class="sets-cfg-row">
+                  <span class="sets-cfg-lbl">Séries:</span>
+                  <input class="sets-cfg-in" type="number" min="1" max="10" value="${series}" style="width:48px;" oninput="updateExConfig('${esc(ex.name)}','${m}','series',this.value);document.getElementById('cfg-badge-${safeKey}').textContent=this.value+'x '+document.getElementById('cfg-rmin-${safeKey}').value+'-'+document.getElementById('cfg-rmax-${safeKey}').value" onclick="event.stopPropagation()"/>
+                  <span class="sets-cfg-lbl">Repetições:</span>
+                  <input class="sets-cfg-in" id="cfg-rmin-${safeKey}" type="number" min="1" max="100" value="${repsMin}" oninput="updateExConfig('${esc(ex.name)}','${m}','repsMin',this.value);document.getElementById('cfg-badge-${safeKey}').textContent=document.querySelectorAll('#cfg-rmin-${safeKey}')[0].closest('.sets-cfg-panel').querySelector('input').value+'x '+this.value+'-'+document.getElementById('cfg-rmax-${safeKey}').value" onclick="event.stopPropagation()"/>
+                  <span class="sets-cfg-sep">até</span>
+                  <input class="sets-cfg-in" id="cfg-rmax-${safeKey}" type="number" min="1" max="100" value="${repsMax}" oninput="updateExConfig('${esc(ex.name)}','${m}','repsMax',this.value);document.getElementById('cfg-badge-${safeKey}').textContent=document.querySelectorAll('#cfg-rmin-${safeKey}')[0].closest('.sets-cfg-panel').querySelector('input').value+'x '+document.getElementById('cfg-rmin-${safeKey}').value+'-'+this.value" onclick="event.stopPropagation()"/>
+                  <span class="sets-cfg-lbl">reps</span>
+                </div>
+              </div>`:''}
               ${openTechPanel===key&&sel?`<div class="tech-panel">
                 <div class="tech-panel-title">Técnica avançada</div>
                 <div class="tech-opts">
@@ -1201,8 +1262,26 @@ function wizToggleMuscleStep3(m){
   renderWiz();
 }
 function togMuscle(m){const i=wizData.muscles.indexOf(m);if(i>=0){wizData.muscles.splice(i,1);wizData.exercises=wizData.exercises.filter(e=>e.muscle!==m);}else wizData.muscles.push(m);renderWiz();}
-function togEx(n,m){const i=wizData.exercises.findIndex(e=>e.name===n&&e.muscle===m);if(i>=0)wizData.exercises.splice(i,1);else wizData.exercises.push({name:n,muscle:m});renderWiz();}
+function togEx(n,m){const i=wizData.exercises.findIndex(e=>e.name===n&&e.muscle===m);if(i>=0)wizData.exercises.splice(i,1);else wizData.exercises.push({name:n,muscle:m,series:3,repsMin:8,repsMax:12,isTimer:false,timerSec:30});renderWiz();}
 function toggleTP(key){openTechPanel=openTechPanel===key?null:key;renderWiz();}
+function toggleExTimer(name,muscle){
+  const ex=wizData.exercises.find(e=>e.name===name&&e.muscle===muscle);
+  if(!ex)return;
+  ex.isTimer=!ex.isTimer;
+  if(ex.isTimer&&!ex.timerSec)ex.timerSec=30;
+  renderWiz();
+}
+function updateExConfig(name,muscle,field,val){
+  const ex=wizData.exercises.find(e=>e.name===name&&e.muscle===muscle);
+  if(!ex)return;
+  const v=parseInt(val)||0;
+  ex[field]=v;
+  // Update display live without full re-render
+  const inpId='cfg-'+field+'-'+btoa(name+muscle).replace(/[^a-zA-Z0-9]/g,'').slice(0,10);
+  // badge update
+  const badge=document.getElementById('cfg-badge-'+btoa(name+muscle).replace(/[^a-zA-Z0-9]/g,'').slice(0,10));
+  if(badge){badge.textContent=ex.series+'x '+ex.repsMin+'-'+ex.repsMax;}
+}
 function setTech(key,id){if(id)wizData.techMap[key]=id;else delete wizData.techMap[key];openTechPanel=null;renderWiz();}
 
 function selectPreset(id){
@@ -1274,7 +1353,15 @@ function openSession(id){
   const sp=splits.find(s=>s.id===id);if(!sp)return;
   if(sp.type==='cardio'){openCardioSess(sp);return;}
   sessionSplit=sp;sessionSets={};sessionObs={};dragSrcIdx=null;
-  sp.exercises.forEach((_,ei)=>{sessionSets[ei]=defSets();sessionObs[ei]='';});
+  sp.exercises.forEach((ex,ei)=>{
+    const n=ex.series||3;
+    const rMin=ex.repsMin||'';
+    const rMax=ex.repsMax||'';
+    const sets=[];
+    for(let i=0;i<n;i++)sets.push({weight:'',reps:rMin&&rMax?rMin+'-'+rMax:''});
+    sessionSets[ei]=sets;
+    sessionObs[ei]='';
+  });
   gotoPage('session');renderSess();
 }
 
@@ -1326,15 +1413,58 @@ function renderSess(){
       ${techObj?`<div class="tech-info-box"><div class="tech-info-name">${techObj.name}</div><div class="tech-info-desc">${techObj.desc}</div></div>`:''}
       ${prev}
       <div class="sets-wrap">
-        <div class="sets-hdr-r"><div>#</div><div>Carga (kg)</div><div>Repetições</div><div></div></div>
-        ${sets.map((s,si)=>{const it=si===ti;const sid=`${ei}-${si}`;return `<div class="set-row" id="srow-${sid}">
-          <div class="set-n ${it?'top':''}">${it?'★':si+1}</div>
-          <input class="set-in ${it?'is-top':''}" id="w-${sid}" type="number" min="0" step=".5" value="${s.weight}" placeholder="0" oninput="updSet(${ei},${si},'weight',this.value);markExUnsaved(${ei})"/>
-          <input class="set-in ${it?'is-top':''}" id="r-${sid}" type="number" min="0" value="${s.reps}" placeholder="0" oninput="updSet(${ei},${si},'reps',this.value);markExUnsaved(${ei})"/>
-          <button class="btn-del-s" onclick="delSet(${ei},${si})">✕</button></div>`;}).join('')}
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px;">
-          <button class="btn-add-s" onclick="addSet(${ei})">+ Série</button>
-          <button class="btn-save-set ${sessionSets[ei]&&sessionSets[ei].every(s=>s.saved)?'saved':''}" id="sv-ex-${ei}" onclick="saveExSets(${ei})">
+        
+        ${sets.map((s,si)=>{
+          const it=si===ti;const sid=`${ei}-${si}`;
+          const exCfg=sp.exercises[ei];
+          const rMin=parseInt(exCfg?.repsMin)||1;
+          const rMax=parseInt(exCfg?.repsMax)||20;
+          // Build range buttons: every value from rMin to rMax (max 8 buttons, else step)
+          const range=rMax-rMin;
+          const step=range<=7?1:range<=15?2:3;
+          const btnVals=[];
+          for(let v=rMin;v<=rMax;v+=step)btnVals.push(v);
+          if(btnVals[btnVals.length-1]!==rMax)btnVals.push(rMax);
+          const curRep=String(s.reps||'');
+          const isInRange=btnVals.map(String).includes(curRep);
+          const repBtns=btnVals.map(v=>`<button class="rep-btn${it?' is-top':''}${curRep===String(v)?' active':''}" onclick="setRep(${ei},${si},${v})">${v}</button>`).join('');
+          const isTimer=exCfg?.isTimer||false;
+          const timerSec=parseInt(exCfg?.timerSec)||30;
+          const setLabel=it?'★ Top Set':'Série '+(si+1);
+          const repFieldHtml=isTimer
+            ?`<div class="rep-timer" onclick="startTimer(${timerSec},'${sid}')">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+                <span id="timer-disp-${sid}">${timerSec}s</span>
+              </div>`
+            :`<div class="rep-row">
+                ${repBtns}
+                <input class="rep-custom" id="r-${sid}" type="number" min="0" value="${curRep}" placeholder="+" oninput="updSet(${ei},${si},'reps',this.value);markExUnsaved(${ei});refreshRepBtns(${ei},${si},this.value)" style="${curRep&&!isInRange?'border-color:var(--orange);':''}" />
+              </div>`;
+          return `<div class="set-card ${it?'is-top-card':''}" id="srow-${sid}">
+            <div class="set-card-header">
+              <span class="set-badge ${it?'top':''}">${setLabel}</span>
+              <button class="btn-del-s" onclick="delSet(${ei},${si})">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+              </button>
+            </div>
+            <div class="set-card-fields">
+              ${isTimer?'':`<div class="field-block weight-field">
+                <div class="field-lbl">Carga</div>
+                <div class="field-input-wrap">
+                  <input class="set-in ${it?'is-top':''}" id="w-${sid}" type="number" min="0" step=".5" value="${s.weight}" placeholder="0" oninput="updSet(${ei},${si},'weight',this.value);markExUnsaved(${ei})"/>
+                  <span class="field-unit">kg</span>
+                </div>
+              </div>`}
+              <div class="field-block rep-field">
+                <div class="field-lbl">${isTimer?'Tempo':'Repetições'}</div>
+                ${repFieldHtml}
+              </div>
+            </div>
+          </div>`;
+        }).join('')}
+        <div style="display:flex;gap:8px;margin-top:4px;">
+          <button class="btn-add-s" style="flex:1;" onclick="addSet(${ei})">+ Série</button>
+          <button class="btn-save-set ${sessionSets[ei]&&sessionSets[ei].every(s=>s.saved)?'saved':''}" id="sv-ex-${ei}" onclick="saveExSets(${ei})" style="flex:2;">
             ${sessionSets[ei]&&sessionSets[ei].every(s=>s.saved)?`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Salvo`:`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Salvar`}
           </button>
         </div>
@@ -1358,10 +1488,12 @@ function updSet(ei,si,f,v){
   // saved state managed by saveExSets/markExUnsaved
   const sets=sessionSets[ei];const ti=compTop(sets);const bf=compBackoff(sets,ti);
   const b=document.getElementById('exb-'+ei);if(!b)return;
-  b.querySelectorAll('.set-row').forEach((row,i)=>{
-    const n=row.querySelector('.set-n');const it=i===ti;
-    if(n){n.className='set-n'+(it?' top':'');n.textContent=it?'★':i+1;}
-    row.querySelectorAll('.set-in').forEach(inp=>inp.className='set-in'+(it?' is-top':''));
+  b.querySelectorAll('.set-card').forEach((row,i)=>{
+    const it=i===ti;
+    row.classList.toggle('is-top-card',it);
+    const badge=row.querySelector('.set-badge');
+    if(badge){badge.className='set-badge'+(it?' top':'');badge.textContent=it?'★ Top Set':'Série '+(i+1);}
+    row.querySelectorAll('.set-in').forEach(inp=>inp.classList.toggle('is-top',it));
   });
   const nm=b.querySelector('.ex-blk-name');
   if(nm){const ex=sessionSplit.exercises[ei];const c=(customEx[ex.muscle]||[]).includes(ex.name);
@@ -1388,14 +1520,43 @@ function saveExSets(ei){
   // Update top/backoff badges live
   const sets=sessionSets[ei];const ti=compTop(sets);const bf=compBackoff(sets,ti);
   const b=document.getElementById('exb-'+ei);if(!b)return;
-  b.querySelectorAll('.set-row').forEach((row,i)=>{
-    const n=row.querySelector('.set-n');const it=i===ti;
-    if(n){n.className='set-n'+(it?' top':'');n.textContent=it?'★':i+1;}
-    row.querySelectorAll('.set-in').forEach(inp=>inp.className='set-in'+(it?' is-top':''));
+  b.querySelectorAll('.set-card').forEach((row,i)=>{
+    const it=i===ti;
+    row.classList.toggle('is-top-card',it);
+    const badge=row.querySelector('.set-badge');
+    if(badge){badge.className='set-badge'+(it?' top':'');badge.textContent=it?'★ Top Set':'Série '+(i+1);}
+    row.querySelectorAll('.set-in').forEach(inp=>inp.classList.toggle('is-top',it));
   });
   const nm=b.querySelector('.ex-blk-name');
   if(nm){const ex=sessionSplit.exercises[ei];const c=(customEx[ex.muscle]||[]).includes(ex.name);
     nm.innerHTML=`${c?`<span style="width:6px;height:6px;border-radius:50%;background:var(--orange);display:inline-block;"></span>`:''}${ex.name}${ti>=0?`<span class="top-tag">★ Top Set S${ti+1}</span>`:''}${bf!==null?`<span class="boff-tag">Back-off Set ${bf}kg</span>`:''}`;}
+}
+function setRep(ei,si,val){
+  updSet(ei,si,'reps',val);
+  markExUnsaved(ei);
+  // Update the custom input field value
+  const inp=document.getElementById('r-'+ei+'-'+si);
+  if(inp)inp.value=val;
+  // Refresh button highlights without full re-render
+  refreshRepBtns(ei,si,val);
+}
+function startTimer(sec,sid){
+  const el=document.getElementById('timer-disp-'+sid);
+  if(!el)return;
+  if(el._timerInterval){clearInterval(el._timerInterval);el._timerInterval=null;el.textContent=sec+'s';el.closest('.rep-timer').style.borderColor='';return;}
+  let rem=sec;
+  el.closest('.rep-timer').style.borderColor='var(--red)';
+  el._timerInterval=setInterval(()=>{
+    rem--;el.textContent=rem+'s';
+    if(rem<=0){clearInterval(el._timerInterval);el._timerInterval=null;el.textContent='✓ '+sec+'s';el.closest('.rep-timer').style.borderColor='var(--green)';}
+  },1000);
+}
+function refreshRepBtns(ei,si,val){
+  const row=document.getElementById('srow-'+ei+'-'+si);
+  if(!row)return;
+  row.querySelectorAll('.rep-btn').forEach(btn=>{
+    btn.classList.toggle('active',btn.textContent===String(val));
+  });
 }
 function addSet(ei){sessionSets[ei]=sessionSets[ei]||defSets();sessionSets[ei].push({weight:'',reps:''});renderSess();}
 function delSet(ei,si){if(!sessionSets[ei]||sessionSets[ei].length<=1)return;sessionSets[ei].splice(si,1);renderSess();}
@@ -1594,18 +1755,66 @@ function showFin(msg,kc,type){
 }
 
 /* ══════════════ HISTORY ══════════════ */
+function calcTotalLoad(exercises){
+  // Volume total = Σ (carga × reps) por série em todos os exercícios
+  let total=0;
+  (exercises||[]).forEach(ex=>{
+    (ex.sets||[]).forEach(s=>{
+      const w=parseFloat(s.weight)||0;
+      const r=parseFloat(s.reps)||0;
+      if(w&&r)total+=w*r;
+    });
+  });
+  return total>0?total:null;
+}
+
 function renderHist(){
   const el=document.getElementById('p-history');
-  if(!history.length){el.innerHTML=`<div class="empty">Nenhum treino registrado.<br>Complete sua primeira sessão!</div>`;return;}
-  el.innerHTML=`<div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:17px;letter-spacing:1px;color:var(--muted);margin-bottom:10px;">Histórico Completo</div>
-    ${history.map(h=>{
-      if(h.type==='cardio'){
-        const t=CARDIO_TYPES.find(x=>x.id===h.cardio?.type);
-        const det=Object.entries(h.cardio?.data||{}).map(([k,v])=>`${k}: ${v}`).join(' · ');
-        return `<div class="hist-card"><div class="hist-hdr"><div><div class="hist-split">${h.splitName}</div>${h.kcal?`<div class="hist-kcal">~${h.kcal} kcal</div>`:''}</div><div class="hist-date">${h.date}</div></div><div class="hist-ex"><div style="font-size:11px;color:var(--muted)">${det||'Sessão de cardio'}</div></div></div>`;
-      }
-      return `<div class="hist-card"><div class="hist-hdr"><div><div class="hist-split">${h.splitId} — ${h.splitName}</div>${h.kcal?`<div class="hist-kcal">~${h.kcal} kcal</div>`:''}</div><div class="hist-date">${h.date}</div></div>${(h.exercises||[]).map(ex=>`<div class="hist-ex"><div class="hist-ex-name">${ex.name}</div>${ex.obs?`<div class="hist-ex-obs">"${ex.obs}"</div>`:''}<div class="hist-pills">${(ex.sets||[]).map(s=>`<div class="hist-pill ${s.top?'top':''}">${s.top?'★ ':''}${s.weight||'—'}kg × ${s.reps||'—'}${s.top?' Top Set':''}${s.backoffSet!=null?` — Back-off Set ${s.backoffSet}kg`:''}</div>`).join('')}</div></div>`).join('')}</div>`;
-    }).join('')}`;
+  if(!history.length){el.innerHTML='<div class="empty">Nenhum treino registrado.<br>Complete sua primeira sessão!</div>';return;}
+  var html='<div style="font-family:Barlow Condensed,Impact,sans-serif;font-weight:700;font-size:17px;letter-spacing:1px;color:var(--muted);margin-bottom:10px;">Histórico Completo</div>';
+  history.forEach(function(h){
+    if(h.type==='cardio'){
+      var t=CARDIO_TYPES.find(function(x){return x.id===h.cardio?.type;});
+      var det=Object.entries(h.cardio?.data||{}).map(function(e){return e[0]+': '+e[1];}).join(' · ');
+      html+='<div class="hist-card"><div class="hist-hdr"><div><div class="hist-split">'+h.splitName+'</div>'+(h.kcal?'<div class="hist-kcal">~'+h.kcal+' kcal</div>':'')+'</div><div class="hist-date">'+h.date+'</div></div><div class="hist-ex"><div style="font-size:11px;color:var(--muted)">'+(det||'Sessão de cardio')+'</div></div></div>';
+      return;
+    }
+    var totalLoad=calcTotalLoad(h.exercises);
+    var exHtml='';
+    (h.exercises||[]).forEach(function(ex){
+      var exLoad=0;
+      var pillsHtml='';
+      (ex.sets||[]).forEach(function(s){
+        var w=parseFloat(s.weight)||0;var r=parseFloat(s.reps)||0;
+        if(w&&r)exLoad+=w*r;
+        var pill='<div class="hist-pill '+(s.top?'top':'')+'">'+
+          (s.top?'★ ':'')+
+          (s.weight||'—')+'kg × '+(s.reps||'—')+
+          (s.top?' Top Set':'')+
+          (s.backoffSet!=null?' — Back-off Set '+s.backoffSet+'kg':'')+
+        '</div>';
+        pillsHtml+=pill;
+      });
+      exHtml+='<div class="hist-ex">'+
+        '<div class="hist-ex-name">'+ex.name+'</div>'+
+        (ex.obs?'<div class="hist-ex-obs">"'+ex.obs+'"</div>':'')+
+        '<div class="hist-pills">'+pillsHtml+'</div>'+
+        (exLoad>0?'<div class="hist-total">Volume: <strong>'+exLoad.toLocaleString('pt-BR')+'kg</strong> (carga × reps)</div>':'')+
+      '</div>';
+    });
+    html+='<div class="hist-card">'+
+      '<div class="hist-hdr">'+
+        '<div>'+
+          '<div class="hist-split">'+h.splitId+' — '+h.splitName+'</div>'+
+          (h.kcal?'<div class="hist-kcal">~'+h.kcal+' kcal</div>':'')+
+          (totalLoad?'<div style="font-size:11px;color:var(--muted);margin-top:1px;">Volume total: <strong style="color:var(--text)">'+totalLoad.toLocaleString('pt-BR')+'kg</strong></div>':'')+
+        '</div>'+
+        '<div class="hist-date">'+h.date+'</div>'+
+      '</div>'+
+      exHtml+
+    '</div>';
+  });
+  el.innerHTML=html;
 }
 
 /* ══════════════ START ══════════════ */
